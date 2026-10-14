@@ -18,7 +18,11 @@ export function Footer({
       <Await resolve={footerPromise}>
         {(footer) => (
           <footer className="footer">
-            {footer?.menu && header.shop.primaryDomain?.url && (
+            <div className="footer-signoff">
+              <div><p className="eyebrow">SHUTELONE / INDIA</p><h2>MOVE<br />AFTER<br /><em>HOURS.</em></h2></div>
+              <p>Independent graphic streetwear.<br />Made for the long way home.</p>
+            </div>
+            {header.shop.primaryDomain?.url && (
               <FooterMenu
                 menu={footer.menu}
                 primaryDomainUrl={header.shop.primaryDomain.url}
@@ -43,7 +47,7 @@ function FooterMenu({
 }) {
   return (
     <nav className="footer-menu" role="navigation">
-      {(menu || FALLBACK_FOOTER_MENU).items.map((item) => {
+      {(menu?.items?.length ? menu : FALLBACK_FOOTER_MENU).items.map((item) => {
         if (!item.url) return null;
         // if the url is internal, we strip the domain
         const url =

@@ -7,13 +7,15 @@ import type {Route} from './+types/_index';
 import {Suspense} from 'react';
 import {Image} from '@shopify/hydrogen';
 import type {
-  FeaturedCollectionFragment,
   RecommendedProductsQuery,
 } from 'storefrontapi.generated';
 import {ProductItem} from '~/components/ProductItem';
 
 export const meta: Route.MetaFunction = () => {
-  return [{title: 'Hydrogen | Home'}];
+  return [
+    {title: 'SHUTELONE — The Salon'},
+    {name: 'description', content: 'Independent Indian streetwear, worn after hours.'},
+  ];
 };
 
 export async function loader(args: Route.LoaderArgs) {
@@ -36,9 +38,7 @@ async function loadCriticalData({context}: Route.LoaderArgs) {
     // Add other queries here, so that they are loaded in parallel
   ]);
 
-  return {
-    featuredCollection: collections.nodes[0],
-  };
+  return {featuredCollection: collections.nodes[0]};
 }
 
 /**
@@ -63,33 +63,55 @@ function loadDeferredData({context}: Route.LoaderArgs) {
 export default function Homepage() {
   const data = useLoaderData<typeof loader>();
   return (
-    <div className="home">
-      <FeaturedCollection collection={data.featuredCollection} />
+    <div className="salon-home">
+      <section className="salon" aria-label="SHUTELONE editorial collection">
+        <div className="salon-intro">
+          <p className="eyebrow">EST. 2026 / INDIA</p>
+          <h1>SHUTELONE</h1>
+          <p className="salon-manifesto">Streetwear for the hours<br />that belong to you.</p>
+        </div>
+        <SalonWall products={data.recommendedProducts} />
+        <div className="salon-footer">
+          <span>DRAG TO EXPLORE</span><span>SCROLL TO ENTER ↓</span>
+        </div>
+      </section>
+      <section className="home-statement">
+        <p className="eyebrow">THE DROP</p>
+        <h2>Objects of<br /><em>after hours.</em></h2>
+        <p>Graphic t-shirts built for the people who move differently. Every piece is drawn from the SHUTELONE catalogue and remains live with our Shopify inventory.</p>
+        <Link className="editorial-link" to="/collections/all">SHOP ALL PIECES <span>↗</span></Link>
+      </section>
       <RecommendedProducts products={data.recommendedProducts} />
     </div>
   );
 }
 
-function FeaturedCollection({
-  collection,
-}: {
-  collection: FeaturedCollectionFragment;
-}) {
-  if (!collection) return null;
-  const image = collection?.image;
-  return (
-    <Link
-      className="featured-collection"
-      to={`/collections/${collection.handle}`}
-    >
-      {image && (
-        <div className="featured-collection-image">
-          <Image data={image} sizes="100vw" />
-        </div>
-      )}
-      <h1>{collection.title}</h1>
-    </Link>
-  );
+function SalonWall({products}: {products: Promise<RecommendedProductsQuery | null>}) {
+  return <Suspense fallback={<div className="salon-loading">Loading the salon</div>}>
+    <Await resolve={products}>{(response) => {
+      const items = response?.products.nodes ?? [];
+      const first = items.slice(0, 4);
+      const second = items.slice(4, 8).length ? items.slice(4, 8) : first;
+      const third = items.slice(8, 12).length ? items.slice(8, 12) : first;
+      return <div className="salon-wall">
+        <SalonRow products={first} direction="left" />
+        <SalonRow products={second} direction="right" />
+        <SalonRow products={third} direction="left" />
+      </div>;
+    }}</Await>
+  </Suspense>;
+}
+
+function SalonRow({products, direction}: {products: NonNullable<RecommendedProductsQuery>['products']['nodes']; direction: 'left' | 'right'}) {
+  const doubled = [...products, ...products];
+  return <div className={`salon-row ${direction}`}>
+    <div className="salon-track">
+      {doubled.map((product, index) => <Link to={`/products/${product.handle}`} className="salon-look" key={`${product.id}-${index}`}>
+        {product.featuredImage && <Image data={product.featuredImage} sizes="(max-width: 700px) 35vw, 19vw" />}
+        <span>{product.title}</span>
+      </Link>)}
+    </div>
+  </div>;
 }
 
 function RecommendedProducts({
@@ -98,8 +120,8 @@ function RecommendedProducts({
   products: Promise<RecommendedProductsQuery | null>;
 }) {
   return (
-    <div className="recommended-products">
-      <h2>Recommended Products</h2>
+    <section className="recommended-products">
+      <div className="section-heading"><p className="eyebrow">SELECTED PIECES</p><Link to="/collections/all">VIEW COLLECTION ↗</Link></div>
       <Suspense fallback={<div>Loading...</div>}>
         <Await resolve={products}>
           {(response) => (
@@ -114,7 +136,7 @@ function RecommendedProducts({
         </Await>
       </Suspense>
       <br />
-    </div>
+    </section>
   );
 }
 
@@ -162,7 +184,7 @@ const RECOMMENDED_PRODUCTS_QUERY = `#graphql
   }
   query RecommendedProducts ($country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
-    products(first: 4, sortKey: UPDATED_AT, reverse: true) {
+    products(first: 12, sortKey: UPDATED_AT, reverse: true) {
       nodes {
         ...RecommendedProduct
       }

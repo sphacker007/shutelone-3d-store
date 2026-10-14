@@ -27,7 +27,7 @@ export function Header({
   return (
     <header className="header">
       <NavLink prefetch="intent" to="/" style={activeLinkStyle} end>
-        <strong>{shop.name}</strong>
+        <strong>SHUTELONE</strong>
       </NavLink>
       <HeaderMenu
         menu={menu}
@@ -67,7 +67,7 @@ export function HeaderMenu({
           Home
         </NavLink>
       )}
-      {(menu || FALLBACK_HEADER_MENU).items.map((item) => {
+        {(menu?.items?.length ? menu : FALLBACK_HEADER_MENU).items.map((item) => {
         if (!item.url) return null;
 
         // if the url is internal, we strip the domain
@@ -102,7 +102,7 @@ function HeaderCtas({
   return (
     <nav className="header-ctas" role="navigation">
       <HeaderMenuMobileToggle />
-      <NavLink prefetch="intent" to="/account" style={activeLinkStyle}>
+      <NavLink className="header-account" prefetch="intent" to="/account" style={activeLinkStyle}>
         <Suspense fallback="Sign in">
           <Await resolve={isLoggedIn} errorElement="Sign in">
             {(isLoggedIn) => (isLoggedIn ? 'Account' : 'Sign in')}
@@ -131,7 +131,7 @@ function SearchToggle() {
   const {open} = useAside();
   return (
     <button className="reset" onClick={() => open('search')}>
-      Search
+      <span aria-hidden="true">⌕</span><span className="sr-only">Search</span>
     </button>
   );
 }
@@ -154,7 +154,7 @@ function CartBadge({count}: {count: number | null}) {
         } as CartViewPayload);
       }}
     >
-      Cart {count === null ? <span>&nbsp;</span> : count}
+      Bag {count === null ? <span>&nbsp;</span> : <span>({count})</span>}
     </a>
   );
 }
@@ -182,7 +182,7 @@ const FALLBACK_HEADER_MENU = {
       id: 'gid://shopify/MenuItem/461609500728',
       resourceId: null,
       tags: [],
-      title: 'Collections',
+      title: 'Shop',
       type: 'HTTP',
       url: '/collections',
       items: [],
@@ -191,27 +191,27 @@ const FALLBACK_HEADER_MENU = {
       id: 'gid://shopify/MenuItem/461609533496',
       resourceId: null,
       tags: [],
-      title: 'Blog',
+      title: 'Looks',
       type: 'HTTP',
-      url: '/blogs/journal',
+      url: '/collections/all',
       items: [],
     },
     {
       id: 'gid://shopify/MenuItem/461609566264',
       resourceId: null,
       tags: [],
-      title: 'Policies',
+      title: 'Atelier',
       type: 'HTTP',
-      url: '/policies',
+      url: '/pages/about',
       items: [],
     },
     {
       id: 'gid://shopify/MenuItem/461609599032',
       resourceId: 'gid://shopify/Page/92591030328',
       tags: [],
-      title: 'About',
+      title: 'Journal',
       type: 'PAGE',
-      url: '/pages/about',
+      url: '/blogs/journal',
       items: [],
     },
   ],
